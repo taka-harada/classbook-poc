@@ -9,9 +9,10 @@ type FrameType = {
   // frameSize: { width: number, height: number }
   handleFrameImage: (pageId: number, frameId: number, image: string) => void
   handleFrameData: (pageId: number, frameId: number, frameData: {x: number, y: number, width: number, height: number}) => void
+  handleSelectFrame: (pageId: number, frameId: number) => void
 }
 
-const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData }: FrameType) => {
+const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData, handleSelectFrame }: FrameType) => {
 
   // DragOverを管理
   const [isDragOver, setIsDragOver] = useState<boolean>(false)
@@ -106,8 +107,11 @@ const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData 
     [pageId, frameId, handleFrameImage]
   )
 
+  // フレームがクリックされたとき
+  const handleClickFrame = () => handleSelectFrame(pageId, frameId)
+
   return (
-    <div ref={frameRef} className={frameContainer} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+    <div ref={frameRef} className={frameContainer} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={handleClickFrame}>
       <div className={`${frameImageArea} ${isDragOver ? dragOver : ""}`}>
         {image ? (
           <img className={frameImage} src={image} alt={`frame-${frameId}`} />

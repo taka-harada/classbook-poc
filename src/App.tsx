@@ -1,5 +1,5 @@
 import Album from './components/Album'
-import Page from './components/Page'
+// import Page from './components/Page'
 import './App.css'
 
 function App() {
@@ -7,7 +7,7 @@ function App() {
   return (
     <>
       <Album />
-      <Page />
+      {/* <Page /> */}
     </>
   )
 }
