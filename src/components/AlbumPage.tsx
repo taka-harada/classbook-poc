@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import AlbumFrame from "./AlbumFrame"
-import { pageContainer } from "../styles.css"
+import { pageContainer, frameListWrap } from "../styles.css"
 
 type FrameDataType = {
   id: number
@@ -66,17 +66,19 @@ const AlbumPage = ({
       </select>
 
       <div ref={pageContainerRef} className={pageContainer} style={themeStyle}>
-        {frames.map(frame => (
-          <AlbumFrame
-            key={frame.id}
-            pageId={pageId}
-            frameId={frame.id}
-            image={frame.image}
-            handleFrameImage={handleFrameImage}
-            handleFrameData={handleFrameData}
-            handleSelectFrame={handleSelectFrame}
-          />
-        ))}
+        <div className={frameListWrap}>
+          {frames.map(frame => (
+            <AlbumFrame
+              key={frame.id}
+              pageId={pageId}
+              frameId={frame.id}
+              image={frame.image}
+              handleFrameImage={handleFrameImage}
+              handleFrameData={handleFrameData}
+              handleSelectFrame={handleSelectFrame}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

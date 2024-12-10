@@ -26,9 +26,6 @@ export const imageItem = style({
 })
 
 export const pageContainer = style({
-  display: 'flex',
-  justifyContent: 'space-around',
-  flexWrap: 'wrap',
   minWidth: "1400px",
   minHeight: "800px"
 })
@@ -56,7 +53,16 @@ export const pageBackgroundVariants = styleVariants({
   },
 })
 
+export const frameListWrap = style({
+  display: 'flex',
+  justifyContent: 'space-around',
+  flexWrap: 'wrap',
+})
+
 export const frameContainer = style({
+  // width: '200px',
+  // lineHeight: '150px',
+  // margin: '50px',
 })
 
 export const frameImageArea = style({

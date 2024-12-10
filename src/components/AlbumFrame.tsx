@@ -1,12 +1,11 @@
 import { ChangeEvent, DragEvent, useEffect, useState, useRef, useCallback } from "react"
+import Moveable from "react-moveable"
 import { frameContainer, frameImageArea, dragOver, frameImage, fileInput } from "../styles.css.ts"
 
 type FrameType = {
   pageId: number
   frameId: number
   image: string | null
-  // framePosition: { x: number, y: number }
-  // frameSize: { width: number, height: number }
   handleFrameImage: (pageId: number, frameId: number, image: string) => void
   handleFrameData: (pageId: number, frameId: number, frameData: {x: number, y: number, width: number, height: number}) => void
   handleSelectFrame: (pageId: number, frameId: number) => void
@@ -17,9 +16,16 @@ const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData,
   // DragOverを管理
   const [isDragOver, setIsDragOver] = useState<boolean>(false)
   const frameRef = useRef<HTMLDivElement | null>(null)
+  const [moveableTarget, setMoveableTarget] = useState<HTMLDivElement | null>(null)
+
 
   // 前回の座標を管理するref
   const prevFrameData = useRef<{x: number, y: number, width: number, height: number} | null>(null)
+
+  // コンポーネントがマウントされたときにMoveableのターゲットを更新
+  useEffect(() => {
+    setMoveableTarget(frameRef.current)
+  }, [frameRef.current])
 
   // コンポーネントがマウントされたときに座標を更新
   useEffect(() => {
@@ -40,24 +46,6 @@ const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData,
       }
     }
   }, [pageId, frameId, handleFrameData])
-
-  // MEMO: URLをFrameのデータセットに持たせる場合どこかにアップロード
-  // const uploadImage = async (file: File) => {
-  //   const formData = new FormData()
-  //   formData.append("image", file)
-
-  //   try {
-  //     const res = await fetch("http://xxxxx/upload", {
-  //       method: "POST",
-  //       body: formData
-  //     })
-  //     const data = res.json()
-  //     console.log(data)
-  //     // APIレスポンスから取り出したURLをhandleFrameImageにつめて更新
-  //   } catch (e) {
-  //     console.error("Error Upload Image", e)
-  //   }
-  // }
 
   // ファイル選択のinputを使った場合
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -120,6 +108,24 @@ const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData,
         )}
       </div>
       <input className={fileInput} type="file" accept='image/*' onChange={handleFileChange} />
+
+      <Moveable
+        target={moveableTarget}
+        draggable={true}
+        resizable={true}
+        origin={false}
+        throttleDrag={0}
+        throttleResize={0}
+        keepRatio={true}
+        onDrag={(e) => {e.target.style.transform = e.transform}}
+        onResize={e => {
+          e.target.style.width = `${e.width}px`
+          e.target.style.height = `${e.height}px`
+        }}
+        // rotatable={true}
+        // onDrag={handleMove}
+        // onRotate={handleRotate}
+      />
     </div>
   )
 }
