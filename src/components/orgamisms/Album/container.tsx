@@ -1,6 +1,6 @@
-import { useState } from "react"
-import AlbumPage from "./AlbumPage"
-import { modalContainer, imageContainer, imageItem } from "../styles.css"
+import { FC, useState } from "react"
+import AlbumPage from "../AlbumPage/AlbumPage"
+import { modalContainer, imageContainer, imageItem } from "../../../styles.css"
 
 type FrameDataType = {
   id: number
@@ -17,7 +17,7 @@ type PageDataType = {
 }
 
 // 各ページのサイズは個別に持たせるかアルバムデータの中に1つ持たせるか？
-const Album = () => {
+export const Container: FC = () => {
   const defaultAlbumData = [
     {
       id: 1,
@@ -74,6 +74,10 @@ const Album = () => {
   const [currentPageId, setCurrentPageId] = useState<number>(1)
   // 選択されているフレームを管理
   const [selectedFrame, setSelectedFrame] = useState<{ pageId: number, frameId: number } | null>(null)
+  // 選択された画像が編集可能かどうかを管理
+  const [isEditable, setIsEditable] = useState<boolean>(false)
+  // 選択された画像の編集状態を管理
+  const [isEditMode, setIsEditMode] = useState<boolean>(false)
 
   // ページサイズを更新
   const handlePageSize = (pageId: number, pageSize: { width: number, height: number }) => {
@@ -137,8 +141,18 @@ const Album = () => {
 
   const handleSelectPage = (pageId: number) => setCurrentPageId(pageId)
 
-  // フレーム選択時の処理
-  const handleSelectFrame = (pageId: number, frameId: number) => setSelectedFrame({ pageId, frameId })
+  // フレーム選択時の処理（MEMO: 将来的にテキストも選択状態にしたりしそうなのでhandleSelectElementなどになりそう）
+  const handleSelectFrame = (pageId: number, frameId: number, imageSrc?: string) => {
+
+    // 選択されたフレームのページidとフレームidをセット
+    setSelectedFrame({ pageId, frameId })
+
+    // MEMO: ここで画像がセットされていたら「画像を編集状態」にするフラグを制御
+    console.log("image返ってきてる？",imageSrc) //Frameがクリックされないと発火しないのでNG。クリックせずとも画像がセットされてたら「編集」ボタン出すべき
+
+    // 画像がセットされていたら「編集可能」状態に（ボタンが表示）
+    setIsEditable( imageSrc ? true : false)
+  }
 
   // 画像選択時の処理
   const handleSelectImage = (imageSrc: string) => {
@@ -150,8 +164,17 @@ const Album = () => {
     }
   }
 
-  console.log("pagesデータ",pages)
-  console.log("imageListどうなってる？",imageList)
+  const handleEditMode = () => {
+    setIsEditMode(true)
+  }
+
+  // console.log("pagesデータ",pages)
+  // console.log("imageListどうなってる？",imageList)
+
+  const onClickCancel = () => {
+    setSelectedFrame(null) //フレーム選択状態を解除
+    setIsEditMode(false) //編集モード終了
+  }
 
   return (
     <div>
@@ -174,6 +197,9 @@ const Album = () => {
             backgroundImageList={backgroundImageList}
             selectedBackgroundImage={page.backgroundImage}
             frames={page.frames}
+            selectedFrame={selectedFrame}
+            isEditMode={isEditMode}
+            setIsEditMode={setIsEditMode}
             handlePageSize={handlePageSize}
             handlePageBackgroundImage={handlePageBackgroundImage}
             handleFrameImage={handleFrameImage}
@@ -182,6 +208,15 @@ const Album = () => {
           />
         ))}
       </div>
+
+      {/* 編集ボタン */}
+      {isEditable && (
+        <div>
+          <button onClick={handleEditMode}>画像を編集</button>
+          <button onClick={() => console.log("解除")}>選択解除</button>
+        </div>
+      )}
+
       {/* 画像選択モーダル */}
       {selectedFrame && (
         <div className={modalContainer}>
@@ -191,11 +226,9 @@ const Album = () => {
               <img className={imageItem} key={index} src={imageSrc} alt={`Image ${index}`} onClick={() => handleSelectImage(imageSrc)} />
             ))}
           </div>
-          <button onClick={() => setSelectedFrame(null)}>キャンセル</button>
+          <button onClick={onClickCancel}>キャンセル</button>
         </div>
       )}
     </div>
   )
 }
-
-export default Album

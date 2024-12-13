@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
-import AlbumFrame from "./AlbumFrame"
-import { pageContainer, frameListWrap } from "../styles.css"
+import { Dispatch, SetStateAction, useEffect, useRef } from 'react'
+import AlbumFrame from '../../molecules/AlbumFrame/AlbumFrame'
+import { pageContainer, frameListWrap } from "../../../styles.css"
 
 type FrameDataType = {
   id: number
@@ -20,11 +20,14 @@ type AlbumPageProps = {
   backgroundImageList: BackgroundImageType[]
   selectedBackgroundImage: string | null
   frames: FrameDataType[]
+  selectedFrame: {pageId: number, frameId: number} | null
+  isEditMode: boolean
+  setIsEditMode: Dispatch<SetStateAction<boolean>>
   handlePageSize: (pageId: number, pageSize: { width: number, height: number }) => void
   handlePageBackgroundImage: (pageId: number, imageSrc: string) => void
   handleFrameImage: (pageId: number, frameId: number, imageSrc: string) => void
   handleFrameData: (pageId: number, frameId: number, frameData: {x: number, y: number, width: number, height: number}) => void
-  handleSelectFrame: (pageId: number, frameId: number) => void
+  handleSelectFrame: (pageId: number, frameId: number, imageSrc?: string) => void
 }
 
 const AlbumPage = ({
@@ -32,11 +35,14 @@ const AlbumPage = ({
   backgroundImageList,
   selectedBackgroundImage,
   frames,
+  selectedFrame,
+  isEditMode,
+  setIsEditMode,
   handlePageSize,
   handlePageBackgroundImage,
   handleFrameImage,
   handleFrameData,
-  handleSelectFrame
+  handleSelectFrame,
 }: AlbumPageProps) => {
 
   const pageContainerRef = useRef<HTMLDivElement | null>(null)
@@ -72,7 +78,10 @@ const AlbumPage = ({
               key={frame.id}
               pageId={pageId}
               frameId={frame.id}
-              image={frame.image}
+              imageSrc={frame.image}
+              selectedFrame={selectedFrame}
+              isEditMode={isEditMode}
+              setIsEditMode={setIsEditMode}
               handleFrameImage={handleFrameImage}
               handleFrameData={handleFrameData}
               handleSelectFrame={handleSelectFrame}

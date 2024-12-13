@@ -65,6 +65,10 @@ export const frameContainer = style({
   // margin: '50px',
 })
 
+export const isSelectedFrame = style({
+  border: '2px solid green'
+})
+
 export const frameImageArea = style({
   border: '2px solid black',
   width: '200px',

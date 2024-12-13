@@ -1,31 +1,43 @@
-import { ChangeEvent, DragEvent, useEffect, useState, useRef, useCallback } from "react"
+import { ChangeEvent, DragEvent, useEffect, useState, useRef, useCallback, Dispatch, SetStateAction } from "react"
 import Moveable from "react-moveable"
-import { frameContainer, frameImageArea, dragOver, frameImage, fileInput } from "../styles.css.ts"
+import { frameContainer, isSelectedFrame, frameImageArea, dragOver, frameImage, fileInput } from "../../../styles.css.ts"
 
 type FrameType = {
   pageId: number
   frameId: number
-  image: string | null
-  handleFrameImage: (pageId: number, frameId: number, image: string) => void
+  imageSrc: string | null
+  selectedFrame: {pageId: number, frameId: number} | null
+  isEditMode: boolean
+  setIsEditMode: Dispatch<SetStateAction<boolean>>
+  handleFrameImage: (pageId: number, frameId: number, imageSrc: string) => void
   handleFrameData: (pageId: number, frameId: number, frameData: {x: number, y: number, width: number, height: number}) => void
-  handleSelectFrame: (pageId: number, frameId: number) => void
+  handleSelectFrame: (pageId: number, frameId: number, image?: string) => void
 }
 
-const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData, handleSelectFrame }: FrameType) => {
+const AlbumFrame = ({ pageId, frameId, imageSrc, selectedFrame, isEditMode, setIsEditMode, handleFrameImage, handleFrameData, handleSelectFrame }: FrameType) => {
+
+  // 複数フレームの中から現在選択中のフレームを特定
+  const isActive = selectedFrame?.pageId === pageId && selectedFrame?.frameId === frameId
 
   // DragOverを管理
   const [isDragOver, setIsDragOver] = useState<boolean>(false)
   const frameRef = useRef<HTMLDivElement | null>(null)
-  const [moveableTarget, setMoveableTarget] = useState<HTMLDivElement | null>(null)
-
+  const imageRef = useRef<HTMLImageElement | null>(null)
+  const [moveableTarget, setMoveableTarget] = useState<HTMLImageElement | null>(null)
 
   // 前回の座標を管理するref
   const prevFrameData = useRef<{x: number, y: number, width: number, height: number} | null>(null)
 
   // コンポーネントがマウントされたときにMoveableのターゲットを更新
   useEffect(() => {
-    setMoveableTarget(frameRef.current)
-  }, [frameRef.current])
+
+    // 画像が存在する場合にMoveableターゲットを設定（ここは画像がセットされる & 選択状態になった時にした方がよさげ）
+    if(isEditMode && isActive && imageRef.current) {
+      setMoveableTarget(imageRef.current)
+    } else {
+      setMoveableTarget(null)
+    }
+  }, [isEditMode, isActive])
 
   // コンポーネントがマウントされたときに座標を更新
   useEffect(() => {
@@ -96,37 +108,40 @@ const AlbumFrame = ({ pageId, frameId, image, handleFrameImage, handleFrameData,
   )
 
   // フレームがクリックされたとき
-  const handleClickFrame = () => handleSelectFrame(pageId, frameId)
+  const handleClickFrame = () => {
+    handleSelectFrame(pageId, frameId, imageSrc || undefined) //nullの場合はundefinedを渡す
+    setIsEditMode(false) //編集モード終了
+  }
 
   return (
-    <div ref={frameRef} className={frameContainer} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={handleClickFrame}>
+    <>
+    <div ref={frameRef} className={`${frameContainer} ${isActive ? isSelectedFrame : ""}`} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={handleClickFrame}>
       <div className={`${frameImageArea} ${isDragOver ? dragOver : ""}`}>
-        {image ? (
-          <img className={frameImage} src={image} alt={`frame-${frameId}`} />
+        {imageSrc ? (
+          <img ref={imageRef} className={frameImage} src={imageSrc} alt={`frame-${frameId}`} />
         ) : (
           <p>画像を選択</p>
         )}
       </div>
       <input className={fileInput} type="file" accept='image/*' onChange={handleFileChange} />
 
-      <Moveable
-        target={moveableTarget}
-        draggable={true}
-        resizable={true}
-        origin={false}
-        throttleDrag={0}
-        throttleResize={0}
-        keepRatio={true}
-        onDrag={(e) => {e.target.style.transform = e.transform}}
-        onResize={e => {
-          e.target.style.width = `${e.width}px`
-          e.target.style.height = `${e.height}px`
-        }}
-        // rotatable={true}
-        // onDrag={handleMove}
-        // onRotate={handleRotate}
-      />
+      {isActive && isEditMode && moveableTarget && (
+        <Moveable
+          target={moveableTarget}
+          resizable={true}
+          origin={false}
+          throttleResize={0}
+          keepRatio={true}
+          onResize={e => {
+            if(imageRef.current) {
+              imageRef.current.style.width = `${e.width}px`
+              imageRef.current.style.height = `${e.height}px`
+            }
+          }}
+        />
+      )}
     </div>
+  </>
   )
 }
 
